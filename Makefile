@@ -7,9 +7,12 @@ ASM_BOOT := boot/boot.asm
 ASM_KERNEL := boot/kernel.asm
 KERNEL_SECTORS := 8
 
-.PHONY: all clean run verify hexdump
+.PHONY: all help clean run verify hexdump
 
-all: $(IMAGE)
+all: $(IMAGE) ## Build the bootable disk image (default)
+
+help: ## Show this help
+	@awk 'BEGIN {FS = ":.*##"; printf "PotatoOS targets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  %-12s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -25,15 +28,15 @@ $(KERNEL_BIN): $(ASM_KERNEL) | $(BUILD_DIR)
 $(IMAGE): $(BOOT_BIN) $(KERNEL_BIN)
 	cat $(BOOT_BIN) $(KERNEL_BIN) > $(IMAGE)
 
-run: $(IMAGE)
+run: $(IMAGE) ## Boot the image in QEMU
 	qemu-system-i386 -drive format=raw,file=$(IMAGE)
 
-verify: $(IMAGE)
+verify: $(IMAGE) ## Verify boot signature, image size, and stage-2 markers
 	@python3 scripts/verify_boot_image.py $(IMAGE) $(KERNEL_SECTORS)
 	@echo "OK: $(IMAGE) is a valid PotatoOS boot image."
 
-hexdump: $(IMAGE)
+hexdump: $(IMAGE) ## Tail-hexdump the disk image
 	xxd $(IMAGE) | tail
 
-clean:
+clean: ## Remove build artifacts
 	rm -rf $(BUILD_DIR)
