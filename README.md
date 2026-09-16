@@ -50,6 +50,11 @@ build/potato-os.img
 make verify
 ```
 
+This checks the image size, the `0x55AA` boot signature, the stage-2 shell
+markers, and doc/code consistency: every command in the table above must
+exist as a null-terminated literal in the stage-2 kernel binary, so a
+documented command can never silently go missing from the shell.
+
 ### Run in QEMU
 
 ```bash
